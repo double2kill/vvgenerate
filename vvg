@@ -1,0 +1,96 @@
+#!/bin/bash
+
+#初始化
+pathnow=`pwd`
+jobname='yhuang'
+lsfname='fluent'
+jouname='fluent-shuntai'
+fuentcase='fluent'
+number=8
+steps=1000
+maxits=40
+option1=${1}
+
+#定义函数
+WriteLsfJou(){
+	echo -e "case(data):\t${fuentcase}.cas(dat)\nlsf file name:\t${lsfname}.lsf\njou file name:\t${jouname}.jou\nbsub name:\t${jobname}\nuse cpu number:\t${number}"
+	echo "/solve/dual-time-iterate ${steps} ${maxits}"
+	# 写lsf文件
+	echo "#!/bin/sh" > ${lsfname}.lsf  #第一个为 '>' 表明覆盖,之后为追加
+	echo "#" >> ${lsfname}.lsf
+	echo "#BSUB -J ${jobname}" >> ${lsfname}.lsf
+	echo "#BSUB -q normal" >> ${lsfname}.lsf
+	echo "#BSUB -o %J.out" >> ${lsfname}.lsf
+	echo "#BSUB -e %J.err" >> ${lsfname}.lsf
+	echo "#BSUB -n ${number}" >> ${lsfname}.lsf
+	echo "" >> ${lsfname}.lsf
+	echo "module load impi" >> ${lsfname}.lsf
+	echo "fluent 2ddp -g -t${number} -i ${pathnow}/${jouname}.jou" >> ${lsfname}.lsf
+	# 写jou文件
+	echo "/file/read-case ${pathnow}/${fuentcase}.cas" > ${jouname}.jou  #第一个为 '>' 表明覆盖,之后为追加
+	echo "/file/read-data ${pathnow}/${fuentcase}.dat" >> ${jouname}.jou
+	echo "/solve/dual-time-iterate ${steps} ${maxits}" >> ${jouname}.jou
+	echo "exit" >> ${jouname}.jou
+	echo "yes" >> ${jouname}.jou
+}
+usage(){
+	echo "usage: vvgenerate [-input] [--help]"
+}
+
+#main,从这里开始主程序
+case ${option1} in
+	-h) usage
+		;;
+	--help) usage
+		;;
+	-input) 
+		#读取case名
+		echo -n "please input cas(dat)name (empty for 'fluent'):"
+		read nametemp
+		fuentcase=${nametemp:=fluent}
+
+		#读取job名
+		echo -n "please input jobname ('yhuang'):"
+		read nametemp
+		jobname=${nametemp:=yhuang}
+
+		#读取cpu数
+		echo -n "please input cpu number ('8'):"
+		read numtemp
+		number=${numtemp:=8}
+
+		#读取steps名
+		echo -n "please input number of timesteps ('1000'):"
+		read numtemp
+		steps=${numtemp:=1000}
+
+		#读取maxits名
+		echo -n "please input max iterates of one step ('40'):"
+		read numtemp
+		maxits=${numtemp:=40}
+		
+		#读取lsf名
+		echo -n "please input lsfname ('fluent'):"
+		read nametemp
+		lsfname=${nametemp:=fluent}
+
+		#读取jou名
+		echo -n "please input jouname ('fluent-shuntai'):"
+		read nametemp
+		jouname=${nametemp:=fluent-shuntai}
+
+		echo "*********************"
+		
+		WriteLsfJou
+		echo `bsub < ${lsfname}.lsf`
+		;;
+	"") 
+		WriteLsfJou
+		echo "use default, you can use 'vvgenerate -input' to customize settings"
+		;;
+	*) 
+		echo "Unknown opition: ${option1}"
+		usage
+		;;
+esac
+
