@@ -165,6 +165,7 @@ case ${option1} in
 	ubuntu) 
 		printSettings
 		WriteShfJou ${istransient}
+		`chmod +x ${shname}.sh`
 		echo `./${shname}.sh`
 		;;
 	jiqun) 
