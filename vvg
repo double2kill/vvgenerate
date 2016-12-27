@@ -29,7 +29,7 @@ WriteShfJou(){
 	echo "fluent ${is2d3d} -g -t${number} -i ${pathnow}/${jouname}.jou" >> ${shname}.sh
 	# 写jou文件
 	echo "/file/read-case ${pathnow}/${fluentcase}.cas" > ${jouname}.jou  #第一个为 '>' 表明覆盖,之后为追加
-	echo "/file/read-data ${pathnow}/${fluentcase}.dat" >> ${jouname}.jou
+	echo "/file/read-data ${pathnow}/${fluentdata}.dat" >> ${jouname}.jou
 	if [[ ${1} == 1 ]]; then
 		echo "/solve/dual-time-iterate ${steps} ${maxits}" >> ${jouname}.jou
 	else	
@@ -59,7 +59,7 @@ WriteLsfJou(){
 	echo "fluent ${is2d3d} -g -t${number} -i ${pathnow}/${jouname}.jou" >> ${lsfname}.lsf
 	# 写jou文件
 	echo "/file/read-case ${pathnow}/${fluentcase}.cas" > ${jouname}.jou  #第一个为 '>' 表明覆盖,之后为追加
-	echo "/file/read-data ${pathnow}/${fluentcase}.dat" >> ${jouname}.jou
+	echo "/file/read-data ${pathnow}/${fluentdata}.dat" >> ${jouname}.jou
 	if [[ ${1} == 1 ]]; then
 		echo "/solve/dual-time-iterate ${steps} ${maxits}" >> ${jouname}.jou
 	else	
@@ -106,10 +106,10 @@ printSettings(){
 
 	if [[ ${1} == 1 ]]; then
 		#读取job名
-		echo -n "please input jobname ('yhuang'):"
+		echo -n "please input jobname ('${fluentcase}'):"
 
 		read nametemp
-		jobname=${nametemp:=yhuang}
+		jobname=${nametemp:=${fluentcase}}
 	fi
 
 	#读取cpu数
